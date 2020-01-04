@@ -94,7 +94,7 @@
 						var t2 = new BigNumber("10000000000000000",16);
 						if( this.hex_number.length==16 && dec_number.gte(t1) ) { dec_number=dec_number.minus(t2); }
 						if( this.hex_number.length==2 || this.hex_number.length==4 || this.hex_number.length==8 || this.hex_number.length==16 )
-							this.decimal_2s = decimal_number.toString(10);
+							this.decimal_2s = dec_number.toString(10);
 						else
 							this.decimal_2s = "N/A";
 					}
