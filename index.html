@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Hex to Decimal</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="utf-8">
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+		<script src="./js/bignumber.min.js"></script>
+		<style>
+			.card-small {
+				width:60%;
+				margin:auto;
+			}
+			div.editable {
+				width: 300px;
+				height: 80px !important;
+				overflow-y: auto;
+				border: 1px solid #ccc;
+				padding: 5px;
+				background-color: #e9ecef;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="title text-center mt-5">
+				<h2>Hexadecimal to Decimal converter</h2>
+			</div>
+			<div id="app">
+				<div class="card card-small p-4">
+					<div class="input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text">Hex Number</span>
+						</div>
+						<input type="text" class="form-control" v-model="hex_number" placeholder="Enter a base 16 Number">
+					</div>
+					<div class="buttons mt-3">
+						<button @click="convert" class="btn btn-success">Convert</button>
+						<button @click="reset" class="btn btn-outline-secondary" type="button">Reset</button>
+					</div>
+					<div class="input-group mt-3">
+						<div class="input-group-prepend">
+							<span class="input-group-text">Decimal Number</span>
+						</div>
+						<textarea class="form-control" disabled :value="decimal_number" aria-label="With textarea"></textarea>
+					</div>
+					<div class="input-group mt-3">
+						<div class="input-group-prepend">
+							<span class="input-group-text">Decimal from signed<br>2's complement</span>
+						</div>
+						<textarea class="form-control" disabled :value="decimal_2s" aria-label="With textarea"></textarea>
+					</div>
+					<div class="input-group mt-3">
+						<div class="input-group-prepend">
+							<span class="input-group-text">Binary number</span>
+						</div>
+						<textarea class="form-control" disabled :value="binary_number" aria-label="With textarea"></textarea>
+					</div>
+					<div class="input-group mt-3">
+						<div class="input-group-prepend">
+							<span class="input-group-text">Decimal calculation</span>
+						</div>
+						<div class="form-control editable" disabled v-html="calculation"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			new Vue({
+				el: '#app',
+				data: {
+					hex_number: '',
+					decimal_number: '',
+					decimal_2s: '',
+					binary_number: '',
+					calculation: ''
+				},
+				methods: {
+					convert() {
+						this.decimal_number = this.parseFloat(this.hex_number, 16);
+						this.binary_number = this.decimal_number.toString(2);
+
+						var dec_number = new BigNumber(this.hex_number,16);
+
+						if( dec_number.isInt() && dec_number.gte(0) ) {
+							if( this.hex_number.length==2 && dec_number.gte("80", 16) ) { dec_number=dec_number.minus("100",16); 
+						}
+						if( this.hex_number.length==4 && dec_number.gte("8000", 16) ) { 
+							dec_number=dec_number.minus("10000",16); 
+						}
+						if( this.hex_number.length==8 && dec_number.gte("80000000", 16) ) { dec_number=dec_number.minus("100000000",16); }
+						var t1 = new BigNumber("8000000000000000",16);
+						var t2 = new BigNumber("10000000000000000",16);
+						if( this.hex_number.length==16 && dec_number.gte(t1) ) { dec_number=dec_number.minus(t2); }
+						if( this.hex_number.length==2 || this.hex_number.length==4 || this.hex_number.length==8 || this.hex_number.length==16 )
+							this.decimal_2s = decimal_number.toString(10);
+						else
+							this.decimal_2s = "N/A";
+					}
+					else
+						this.decimal_2s = "N/A";
+
+
+						this.calculation = '(';
+						this.calculation+= this.hex_number + ')<sub>16</sub> = ';
+						var hexSplit = this.hex_number.split('.');
+						for(var i=0;i<hexSplit[0].length;i++) {
+							this.calculation += ''.concat("(" , hexSplit[0][i], ' x ', '16 <sup>', (hexSplit[0].length - i - 1), '</sup> )');
+							if(i !== hexSplit[0].length - 1) {
+								this.calculation += ' + ';
+							}
+						}
+						if(hexSplit[1] && hexSplit[1].length > 0)
+							for(var i=0;i<hexSplit[1].length;i++) {
+								this.calculation += ' + '.concat("(", hexSplit[1][i], ' x ',  '16 <sup>', '-' + (i+1),  '</sup> )');
+							}
+
+						this.calculation += ' = (' + this.decimal_number + ')<sub>10</sub>'
+
+					},
+					reset() {
+						this.hex_number = '';
+						this.decimal_2s = '';
+						this.decimal_number = '';
+						this.binary_number = '';
+						this.calculation = '';
+					},
+					parseFloat(string, radix)
+					{
+						//split the string at the decimal point
+						string = string.split(/\./);
+						//if there is nothing before the decimal point, make it 0
+						if (string[0] == '') {
+							string[0] = "0";
+						}
+						//if there was a decimal point & something after it
+						if (string.length > 1 && string[1] != '') {
+							var fractionLength = string[1].length;
+							string[1] = parseInt(string[1], radix);
+							string[1] *= Math.pow(radix, -fractionLength);
+							return parseInt(string[0], radix) + string[1];
+						}
+						//if there wasn't a decimal point or there was but nothing was after it
+						return parseInt(string[0], radix);
+					}
+				}
+			})
+		</script>
+	</body>
+</html>
